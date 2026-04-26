@@ -1,6 +1,4 @@
-# OpenLayers PostGIS .NET React Demo
-
-Local development demo for drawing and storing GeoJSON features with OpenLayers, Next.js, ASP.NET Core, Entity Framework Core, PostgreSQL, and PostGIS.
+#
 
 ## Stack
 
