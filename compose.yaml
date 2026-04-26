@@ -1,0 +1,93 @@
+services:
+  db:
+    image: postgis/postgis:17-3.5
+    container_name: geodemo-db
+    environment:
+      POSTGRES_DB: geodemo
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d geodemo"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - geodemo-postgres-data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: ./GeoDemo.Api/Dockerfile
+      target: development
+    container_name: geodemo-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"
+      DOTNET_WATCH_SUPPRESS_EMOJIS: "1"
+      ConnectionStrings__GeoDemoDatabase: Host=db;Port=5432;Database=geodemo;Username=postgres;Password=postgres
+    ports:
+      - "8080:8080"
+    develop:
+      watch:
+        - action: sync
+          path: ./src/backend
+          target: /app
+          ignore:
+            - '**/bin/'
+            - '**/obj/'
+            - backend/
+            - backend.Application/
+            - backend.Application.Contract/
+            - backend.Core/
+            - backend.Infrastructure/
+        - action: rebuild
+          path: ./src/backend/GeoDemo.Api/Dockerfile
+        - action: rebuild
+          path: ./src/backend/GeoDemo.Api/GeoDemo.Api.csproj
+        - action: rebuild
+          path: ./src/backend/GeoDemo.Application/GeoDemo.Application.csproj
+        - action: rebuild
+          path: ./src/backend/GeoDemo.Domain/GeoDemo.Domain.csproj
+        - action: rebuild
+          path: ./src/backend/GeoDemo.Infrastructure/GeoDemo.Infrastructure.csproj
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: ./Dockerfile
+      target: development
+    container_name: geodemo-frontend
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      NODE_ENV: development
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+      WATCHPACK_POLLING: "true"
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8080
+    ports:
+      - "3000:3000"
+    develop:
+      watch:
+        - action: sync
+          path: ./src/frontend
+          target: /app
+          ignore:
+            - node_modules/
+            - .next/
+        - action: rebuild
+          path: ./src/frontend/Dockerfile
+        - action: rebuild
+          path: ./src/frontend/package.json
+        - action: rebuild
+          path: ./src/frontend/package-lock.json
+
+volumes:
+  geodemo-postgres-data:

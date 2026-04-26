@@ -1,0 +1,8 @@
+**/bin
+**/obj
+backend/
+backend.Application/
+backend.Application.Contract/
+backend.Core/
+backend.Infrastructure/
+backend.slnx

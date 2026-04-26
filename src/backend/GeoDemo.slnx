@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="GeoDemo.Api/GeoDemo.Api.csproj" />
+  <Project Path="GeoDemo.Application/GeoDemo.Application.csproj" />
+  <Project Path="GeoDemo.Domain/GeoDemo.Domain.csproj" />
+  <Project Path="GeoDemo.Infrastructure/GeoDemo.Infrastructure.csproj" />
+</Solution>
